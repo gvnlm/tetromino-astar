@@ -5,6 +5,7 @@
 #include "Position.h"
 #include <cstddef>
 #include <ostream>
+#include <vector>
 
 class BitGrid16x16 {
 public:
@@ -13,6 +14,7 @@ public:
   static constexpr int NUM_BITS{MAX_X * MAX_Y};
 
   BitGrid16x16() = default;
+  BitGrid16x16(const std::vector<Position>& positions_to_set);
   BitGrid16x16(const BitGrid16x16& other);
 
   BitGrid16x16& operator=(BitGrid16x16 other);

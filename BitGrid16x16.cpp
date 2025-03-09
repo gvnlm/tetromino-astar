@@ -5,9 +5,19 @@
 #include <cstddef>
 #include <ostream>
 #include <utility>
+#include <vector>
 
 static bool is_valid_pos(Position pos);
 static Position relative_quadrant_pos(Position pos);
+
+BitGrid16x16::BitGrid16x16(const std::vector<Position>& positions_to_set) {
+  assert(positions_to_set.size() < NUM_BITS);
+
+  for (auto pos : positions_to_set) {
+    assert(is_valid_pos(pos));
+    set(pos);
+  }
+}
 
 BitGrid16x16::BitGrid16x16(const BitGrid16x16& other) {
   for (int v{0}; v < max_vertical_pos; ++v) {
