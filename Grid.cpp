@@ -4,7 +4,12 @@
 #include <cassert>
 #include <cstddef>
 #include <ostream>
+#include <stack>
+#include <unordered_set>
 #include <utility>
+#include <vector>
+
+static constexpr int TETROMINO_SIZE{4};
 
 static bool is_valid_pos(Position pos);
 
@@ -69,6 +74,21 @@ std::ostream& operator<<(std::ostream& out, const Grid& grid) {
   return out;
 }
 
+std::vector<Grid> Grid::successors() const {
+  std::vector<Grid> successors{};
+  std::unordered_set<BitGrid16x16, BitGrid16x16Hash> visited{};
+
+  for (int y{0}; y < BitGrid16x16::MAX_Y; ++y) {
+    for (int x{0}; x < BitGrid16x16::MAX_X; ++x) {
+      if (m_placeables.is_set({x, y})) {
+        successors.insert_range(successors.end(), successors_from({x, y}, visited));
+      }
+    }
+  }
+
+  return successors;
+}
+
 std::size_t Grid::hash() const {
   return m_placements.hash();
 }
@@ -91,6 +111,63 @@ void Grid::place(Position pos) {
       m_placeables.set(adj_pos);
     }
   }
+}
+
+std::vector<Grid> Grid::successors_from(
+    Position pos, std::unordered_set<BitGrid16x16, BitGrid16x16Hash>& visited
+) const {
+  struct Node {
+    Grid grid{};
+    std::unordered_set<Position, PositionHash> actions{};
+    int depth{0};
+  };
+
+  std::vector<Grid> successors{};
+
+  std::stack<Node> stack{};
+  stack.emplace(*this, std::unordered_set<Position, PositionHash>{pos}, 0);
+
+  while (!stack.empty()) {
+    auto parent{std::move(stack.top())};
+    stack.pop();
+
+    if (parent.depth == TETROMINO_SIZE) {
+      successors.push_back(std::move(parent.grid));
+      continue;
+    }
+
+    for (auto action : parent.actions) {
+      Node child{parent};
+      child.grid.place(action);
+
+      if (visited.contains(child.grid.m_placements)) {
+        continue;
+      } else {
+        visited.insert(child.grid.m_placements);
+      }
+
+      child.actions.erase(action);
+      ++child.depth;
+
+      Position candidate_actions[]{
+          {action.x, action.y - 1},
+          {action.x, action.y + 1},
+          {action.x - 1, action.y},
+          {action.x + 1, action.y}
+      };
+
+      for (auto candidate_action : candidate_actions) {
+        if (is_valid_pos(candidate_action) && !child.grid.m_placements.is_set(candidate_action)
+            && !s_obstacles.is_set(candidate_action)) {
+          child.actions.insert(candidate_action);
+        }
+      }
+
+      stack.push(std::move(child));
+    }
+  }
+
+  return successors;
 }
 
 static bool is_valid_pos(Position pos) {

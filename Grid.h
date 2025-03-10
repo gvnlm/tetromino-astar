@@ -5,6 +5,8 @@
 #include "Position.h"
 #include <cstddef>
 #include <ostream>
+#include <unordered_set>
+#include <vector>
 
 class Grid {
 public:
@@ -22,6 +24,7 @@ public:
   bool operator==(const Grid& other) const;
   friend std::ostream& operator<<(std::ostream& out, const Grid& grid);
 
+  std::vector<Grid> successors() const;
   std::size_t hash() const;
 
 private:
@@ -33,6 +36,9 @@ private:
   BitGrid16x16 m_placeables{};
 
   void place(Position pos);
+  std::vector<Grid> successors_from(
+      Position pos, std::unordered_set<BitGrid16x16, BitGrid16x16Hash>& visited
+  ) const;
 };
 
 struct GridHash {
