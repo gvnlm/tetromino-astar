@@ -27,6 +27,7 @@ public:
   friend std::ostream& operator<<(std::ostream& out, const Grid& grid);
 
   std::vector<Grid> successors() const;
+  bool is_target_reached() const;
   std::size_t hash() const;
 
 private:
@@ -37,6 +38,8 @@ private:
 
   BitGrid16x16 m_placements{};
   BitGrid16x16 m_placeables{};
+  int m_g{0};
+  int m_h;
 
   void place(Position pos);
   std::vector<Grid> successors_from(

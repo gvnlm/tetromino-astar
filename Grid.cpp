@@ -1,6 +1,7 @@
 #include "Grid.h"
 #include "BitGrid16x16.h"
 #include "Position.h"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <ostream>
@@ -40,17 +41,29 @@ void Grid::preprocess_heuristic_values() {
 }
 
 Grid::Grid() {
+  assert(
+      !s_heuristic_values.empty()
+      && "Grid::preprocess_heuristic_values() must be called before initialising instances of Grid"
+  );
+  assert(s_heuristic_values.contains(s_start));
+
+  m_h = s_heuristic_values[s_start];
+
   m_placeables.set(s_start);
   place(s_start);
 }
 
 Grid::Grid(const Grid& other)
     : m_placements{other.m_placements}
-    , m_placeables{other.m_placeables} {};
+    , m_placeables{other.m_placeables}
+    , m_g{other.m_g}
+    , m_h{other.m_h} {};
 
 Grid& Grid::operator=(Grid other) {
   std::swap(m_placements, other.m_placements);
   std::swap(m_placeables, other.m_placeables);
+  std::swap(m_g, other.m_g);
+  std::swap(m_h, other.m_h);
   return *this;
 }
 
@@ -99,6 +112,10 @@ std::vector<Grid> Grid::successors() const {
   return successors;
 }
 
+bool Grid::is_target_reached() const {
+  return m_h == 0;
+}
+
 std::size_t Grid::hash() const {
   return m_placements.hash();
 }
@@ -111,6 +128,7 @@ void Grid::place(Position pos) {
 
   m_placements.set(pos);
   m_placeables.clear(pos);
+  m_h = std::min(s_heuristic_values[pos], m_h);
 
   Position adj_positions[]{
       {pos.x, pos.y - 1}, {pos.x, pos.y + 1}, {pos.x - 1, pos.y}, {pos.x + 1, pos.y}
@@ -142,6 +160,7 @@ std::vector<Grid> Grid::successors_from(
     stack.pop();
 
     if (parent.depth == TETROMINO_SIZE) {
+      ++parent.grid.m_g;
       successors.push_back(std::move(parent.grid));
       continue;
     }
