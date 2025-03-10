@@ -71,6 +71,10 @@ bool Grid::operator==(const Grid& other) const {
   return m_placements == other.m_placements;
 }
 
+bool Grid::operator<(const Grid& other) const {
+  return m_g + m_h > other.m_g + other.m_h;
+}
+
 std::ostream& operator<<(std::ostream& out, const Grid& grid) {
   for (int y{0}; y < Grid::MAX_Y; ++y) {
     for (int x{0}; x < Grid::MAX_X; ++x) {

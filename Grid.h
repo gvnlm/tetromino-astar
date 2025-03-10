@@ -24,6 +24,7 @@ public:
 
   Grid& operator=(Grid other);
   bool operator==(const Grid& other) const;
+  bool operator<(const Grid& other) const;
   friend std::ostream& operator<<(std::ostream& out, const Grid& grid);
 
   std::vector<Grid> successors() const;
