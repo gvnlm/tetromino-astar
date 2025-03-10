@@ -5,6 +5,7 @@
 #include "Position.h"
 #include <cstddef>
 #include <ostream>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -16,6 +17,7 @@ public:
   static void set_start(Position pos);
   static void set_target(Position pos);
   static void set_obstacles(const BitGrid16x16& obstacles);
+  static void preprocess_heuristic_values();
 
   Grid();
   Grid(const Grid& other);
@@ -31,6 +33,7 @@ private:
   static inline Position s_start{0, 0};
   static inline Position s_target{0, 0};
   static inline BitGrid16x16 s_obstacles{};
+  static inline std::unordered_map<Position, int, PositionHash> s_heuristic_values{};
 
   BitGrid16x16 m_placements{};
   BitGrid16x16 m_placeables{};

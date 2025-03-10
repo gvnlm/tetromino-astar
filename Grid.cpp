@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <ostream>
 #include <stack>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 static constexpr int TETROMINO_SIZE{4};
 
 static bool is_valid_pos(Position pos);
+static int heuristic(Position pos, Position target);
 
 void Grid::set_start(Position pos) {
   assert(is_valid_pos(pos));
@@ -27,6 +29,14 @@ void Grid::set_target(Position pos) {
 
 void Grid::set_obstacles(const BitGrid16x16& obstacles) {
   s_obstacles = obstacles;
+}
+
+void Grid::preprocess_heuristic_values() {
+  for (int y{0}; y < MAX_Y; ++y) {
+    for (int x{0}; x < MAX_X; ++x) {
+      s_heuristic_values[{x, y}] = heuristic({x, y}, s_target);
+    }
+  }
 }
 
 Grid::Grid() {
@@ -172,4 +182,9 @@ std::vector<Grid> Grid::successors_from(
 
 static bool is_valid_pos(Position pos) {
   return pos.x >= 0 && pos.x < Grid::MAX_X && pos.y >= 0 && pos.y < Grid::MAX_Y;
+}
+
+static int heuristic(Position pos, Position target) {
+  int manhattan_distance{std::abs(pos.x - target.x) + std::abs(pos.y - target.y)};
+  return (manhattan_distance + (TETROMINO_SIZE - 1)) / TETROMINO_SIZE;
 }
