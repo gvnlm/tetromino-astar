@@ -45,4 +45,10 @@ private:
   const BitGrid8x8& quadrant(Position pos) const;
 };
 
+struct BitGrid16x16Hash {
+  std::size_t operator()(const BitGrid16x16& grid) const {
+    return grid.hash();
+  }
+};
+
 #endif
