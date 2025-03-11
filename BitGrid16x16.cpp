@@ -13,7 +13,7 @@ static Position relative_quadrant_pos(Position pos);
 BitGrid16x16::BitGrid16x16(const std::vector<Position>& positions_to_set) {
   assert(positions_to_set.size() < NUM_BITS);
 
-  for (auto pos : positions_to_set) {
+  for (const auto& pos : positions_to_set) {
     assert(is_valid_pos(pos));
     set(pos);
   }
