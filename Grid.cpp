@@ -80,17 +80,27 @@ void Grid::preprocess_heuristic_values() {
   }
 }
 
+bool Grid::is_target_enclosed() {
+  assert(
+      !s_heuristic_values.empty()
+      && "Grid::preprocess_heuristic_values() must be called before calling "
+         "Grid::is_target_enclosed()"
+  );
+
+  return !s_heuristic_values.contains(s_start);
+}
+
 Grid::Grid() {
   assert(
       !s_heuristic_values.empty()
       && "Grid::preprocess_heuristic_values() must be called before initialising instances of Grid"
   );
-  assert(s_heuristic_values.contains(s_start));
 
-  m_h = s_heuristic_values[s_start];
-
-  m_placeables.set(s_start);
-  place(s_start);
+  if (s_heuristic_values.contains(s_start)) {
+    m_h = s_heuristic_values[s_start];
+    m_placeables.set(s_start);
+    place(s_start);
+  }
 }
 
 Grid::Grid(const Grid& other)

@@ -18,6 +18,7 @@ public:
   static void set_target(Position pos);
   static void set_obstacles(const BitGrid16x16& obstacles);
   static void preprocess_heuristic_values();
+  static bool is_target_enclosed();
 
   Grid();
   Grid(const Grid& other);

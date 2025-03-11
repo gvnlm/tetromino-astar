@@ -30,12 +30,17 @@ void astar(
   Grid::set_obstacles(obstacles);
   Grid::preprocess_heuristic_values();
 
+  Grid root{};
+  std::cout << root << '\n';
+
+  if (Grid::is_target_enclosed()) {
+    std::cout << "The target is enclosed - no solution exists.\n";
+    return;
+  }
+
   std::priority_queue<Grid> priority_queue{};
   std::unordered_set<Grid, GridHash> visited{};
   Stats stats{};
-
-  Grid root{};
-  std::cout << root << '\n';
 
   if (!visualise) {
     std::cout << "Searching for an optimal solution...\n";
