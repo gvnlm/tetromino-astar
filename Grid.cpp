@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <ostream>
+#include <queue>
 #include <stack>
 #include <unordered_map>
 #include <unordered_set>
@@ -14,7 +15,6 @@
 static constexpr int TETROMINO_SIZE{4};
 
 static bool is_valid_pos(Position pos);
-static int heuristic(Position pos, Position target);
 
 void Grid::set_start(Position pos) {
   assert(is_valid_pos(pos));
@@ -33,10 +33,50 @@ void Grid::set_obstacles(const BitGrid16x16& obstacles) {
 }
 
 void Grid::preprocess_heuristic_values() {
-  for (int y{0}; y < MAX_Y; ++y) {
-    for (int x{0}; x < MAX_X; ++x) {
-      s_heuristic_values[{x, y}] = heuristic({x, y}, s_target);
+  struct Node {
+    Position pos;
+    int cost;
+
+    bool operator<(const Node& other) const {
+      return cost > other.cost;
     }
+  };
+
+  std::priority_queue<Node> unvisited{};
+  std::unordered_set<Position, PositionHash> visited{};
+
+  unvisited.emplace(s_target, 0);
+  s_heuristic_values[s_target] = 0;
+
+  while (!unvisited.empty()) {
+    auto curr{unvisited.top()};
+    unvisited.pop();
+
+    visited.insert(curr.pos);
+
+    Position adj_positions[]{
+        {curr.pos.x, curr.pos.y - 1},
+        {curr.pos.x, curr.pos.y + 1},
+        {curr.pos.x - 1, curr.pos.y},
+        {curr.pos.x + 1, curr.pos.y}
+    };
+
+    for (const auto& adj_pos : adj_positions) {
+      if (visited.contains(adj_pos) || !is_valid_pos(adj_pos) || s_obstacles.is_set(adj_pos)) {
+        continue;
+      }
+
+      int adj_cost{curr.cost + 1};
+
+      if (!s_heuristic_values.contains(adj_pos) || adj_cost < s_heuristic_values[adj_pos]) {
+        s_heuristic_values[adj_pos] = adj_cost;
+        unvisited.emplace(adj_pos, adj_cost);
+      }
+    }
+  }
+
+  for (auto& [_, heuristic_value] : s_heuristic_values) {
+    heuristic_value = (heuristic_value + (TETROMINO_SIZE - 1)) / TETROMINO_SIZE;
   }
 }
 
@@ -205,9 +245,4 @@ std::vector<Grid> Grid::successors_from(
 
 static bool is_valid_pos(Position pos) {
   return pos.x >= 0 && pos.x < Grid::MAX_X && pos.y >= 0 && pos.y < Grid::MAX_Y;
-}
-
-static int heuristic(Position pos, Position target) {
-  int manhattan_distance{std::abs(pos.x - target.x) + std::abs(pos.y - target.y)};
-  return (manhattan_distance + (TETROMINO_SIZE - 1)) / TETROMINO_SIZE;
 }
