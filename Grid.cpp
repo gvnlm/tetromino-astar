@@ -138,7 +138,7 @@ void Grid::place(Position pos) {
       {pos.x, pos.y - 1}, {pos.x, pos.y + 1}, {pos.x - 1, pos.y}, {pos.x + 1, pos.y}
   };
 
-  for (auto adj_pos : adj_positions) {
+  for (const auto& adj_pos : adj_positions) {
     if (is_valid_pos(adj_pos) && !m_placements.is_set(adj_pos) && !s_obstacles.is_set(adj_pos)) {
       m_placeables.set(adj_pos);
     }
@@ -169,7 +169,7 @@ std::vector<Grid> Grid::successors_from(
       continue;
     }
 
-    for (auto action : parent.actions) {
+    for (const auto& action : parent.actions) {
       Node child{parent};
       child.grid.place(action);
 
@@ -189,7 +189,7 @@ std::vector<Grid> Grid::successors_from(
           {action.x + 1, action.y}
       };
 
-      for (auto candidate_action : candidate_actions) {
+      for (const auto& candidate_action : candidate_actions) {
         if (is_valid_pos(candidate_action) && !child.grid.m_placements.is_set(candidate_action)
             && !s_obstacles.is_set(candidate_action)) {
           child.actions.insert(candidate_action);
