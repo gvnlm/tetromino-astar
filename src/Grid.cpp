@@ -1,6 +1,6 @@
-#include "Grid.h"
-#include "BitGrid16x16.h"
-#include "Position.h"
+#include "../include/Grid.h"
+#include "../include/BitGrid16x16.h"
+#include "../include/Position.h"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>

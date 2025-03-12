@@ -1,4 +1,4 @@
-#include "astar.h"
+#include "../include/astar.h"
 #include <iostream>
 
 int main(int argc, char* argv[]) {

@@ -1,5 +1,5 @@
-#include "Node.h"
-#include "Grid.h"
+#include "../include/Node.h"
+#include "../include/Grid.h"
 #include <memory>
 #include <vector>
 

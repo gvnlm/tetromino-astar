@@ -1,7 +1,7 @@
-#include "astar.h"
-#include "Grid.h"
-#include "Node.h"
-#include "Position.h"
+#include "../include/astar.h"
+#include "../include/Grid.h"
+#include "../include/Node.h"
+#include "../include/Position.h"
 #include <cstddef>
 #include <fstream>
 #include <iostream>
