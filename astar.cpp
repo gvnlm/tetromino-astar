@@ -144,7 +144,6 @@ void astar(
   Grid::preprocess_heuristic_values();
 
   auto root{std::make_shared<const Node>()};
-  std::cout << root->grid() << '\n';
 
   if (Grid::is_target_enclosed()) {
     std::cout << "The target is enclosed - no solution exists.\n";
