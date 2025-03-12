@@ -2,6 +2,8 @@
 #include "Grid.h"
 #include "Node.h"
 #include "Position.h"
+#include <cstddef>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <queue>
@@ -80,6 +82,57 @@ void display_path_interactive(const std::shared_ptr<const Node>& node) {
     std::cout << "Press Enter to exit.\n";
   }
 }
+}
+
+bool read_astar_params(const std::string& filename, AstarParams& params) {
+  std::ifstream file(filename);
+
+  if (!file) {
+    return false;
+  }
+
+  bool start_found{false};
+  bool target_found{false};
+  std::string line{};
+
+  for (int y{0}; y < Grid::MAX_Y; ++y) {
+    std::getline(file, line);
+
+    for (int x{0}; x < Grid::MAX_X; ++x) {
+      char ch{line.data()[x]};
+
+      if (ch == 's' || ch == 'S') {
+        if (start_found) {
+          return false;
+        }
+
+        params.start = {x, y};
+        start_found = true;
+        continue;
+      }
+
+      if (ch == 't' || ch == 'T') {
+        if (target_found) {
+          return false;
+        }
+
+        params.target = {x, y};
+        target_found = true;
+        continue;
+      }
+
+      if (ch == 'o' || ch == 'O') {
+        params.obstacles.emplace_back(x, y);
+        continue;
+      }
+
+      if (ch != '.') {
+        return false;
+      }
+    }
+  }
+
+  return start_found && target_found;
 }
 
 void astar(
