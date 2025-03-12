@@ -130,16 +130,14 @@ std::ostream& operator<<(std::ostream& out, const Grid& grid) {
     for (int x{0}; x < Grid::MAX_X; ++x) {
       Position pos{x, y};
 
-      if (pos == Grid::s_start) {
-        out << 'S';
-      } else if (grid.m_placements.is_set(pos)) {
-        out << 'P';
+      if (pos == Grid::s_start || grid.m_placements.is_set(pos)) {
+        out << "\u25A1";
       } else if (pos == Grid::s_target) {
-        out << 'T';
+        out << "\u2605";
       } else if (Grid::s_obstacles.is_set(pos)) {
-        out << 'O';
+        out << "\u25A0";
       } else {
-        out << '.';
+        out << "\u00B7";
       }
 
       out << ' ';
