@@ -15,9 +15,10 @@ struct Stats {
   int revisited{0};
 
   friend std::ostream& operator<<(std::ostream& out, const Stats& stats) {
-    out << "Nodes expanded: " << stats.expanded << '\n';
-    out << "Nodes generated: " << stats.generated << '\n';
-    out << "Nodes revisited: " << stats.revisited << '\n';
+    out << "In total,\n";
+    out << stats.expanded << " nodes were expanded,\n";
+    out << stats.generated << " nodes were generated, and\n";
+    out << stats.revisited << " nodes were revisited.\n";
 
     return out;
   }
@@ -33,6 +34,12 @@ auto make_priority_queue() {
       std::shared_ptr<const Node>,
       std::vector<std::shared_ptr<const Node>>,
       decltype(node_ptr_cmp)>{node_ptr_cmp};
+}
+
+// Assumes the most recent output is a Grid followed by a newline
+void clear_grid_display() {
+  std::cout << "\033[" << Grid::MAX_Y + 1 << 'A'; // Move cursor up Grid::MAX_Y + 1 times
+  std::cout << "\033[J";                          // Clear screen starting from cursor
 }
 }
 
@@ -69,19 +76,19 @@ void astar(
     priority_queue.pop();
 
     if (visualise) {
-      std::cout << "\033[" << Grid::MAX_Y + 1 << 'A'; // Move cursor up Grid::MAX_Y + 1 times
-      std::cout << "\033[J";                          // Clear screen starting from cursor
+      clear_grid_display();
       std::cout << best->grid() << '\n';
     }
 
     if (best->grid().is_target_reached()) {
-      std::cout << "Found an optimal solution!\n\n";
-
-      if (!visualise) {
-        std::cout << best->grid() << '\n';
+      if (visualise) {
+        clear_grid_display();
       }
 
+      std::cout << "Found an optimal solution!\n\n";
       std::cout << stats << '\n';
+      std::cout << best->grid() << '\n';
+
       return;
     }
 
