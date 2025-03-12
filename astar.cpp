@@ -1,7 +1,9 @@
 #include "astar.h"
 #include "Grid.h"
+#include "Node.h"
 #include "Position.h"
 #include <iostream>
+#include <memory>
 #include <queue>
 #include <unordered_set>
 #include <vector>
@@ -20,6 +22,18 @@ struct Stats {
     return out;
   }
 };
+
+auto make_priority_queue() {
+  auto node_ptr_cmp
+      = [](const std::shared_ptr<const Node>& a, const std::shared_ptr<const Node>& b) {
+          return *a < *b;
+        };
+
+  return std::priority_queue<
+      std::shared_ptr<const Node>,
+      std::vector<std::shared_ptr<const Node>>,
+      decltype(node_ptr_cmp)>{node_ptr_cmp};
+}
 }
 
 void astar(
@@ -30,15 +44,15 @@ void astar(
   Grid::set_obstacles(obstacles);
   Grid::preprocess_heuristic_values();
 
-  Grid root{};
-  std::cout << root << '\n';
+  auto root{std::make_shared<const Node>()};
+  std::cout << root->grid() << '\n';
 
   if (Grid::is_target_enclosed()) {
     std::cout << "The target is enclosed - no solution exists.\n";
     return;
   }
 
-  std::priority_queue<Grid> priority_queue{};
+  auto priority_queue{make_priority_queue()};
   std::unordered_set<Grid, GridHash> visited{};
   Stats stats{};
 
@@ -55,25 +69,25 @@ void astar(
     if (visualise) {
       std::cout << "\033[" << Grid::MAX_Y + 1 << 'A'; // Move cursor up Grid::MAX_Y + 1 times
       std::cout << "\033[J";                          // Clear screen starting from cursor
-      std::cout << best << '\n';
+      std::cout << best->grid() << '\n';
     }
 
-    if (best.is_target_reached()) {
+    if (best->grid().is_target_reached()) {
       std::cout << "Found an optimal solution!\n\n";
 
       if (!visualise) {
-        std::cout << best << '\n';
+        std::cout << best->grid() << '\n';
       }
 
       std::cout << stats << '\n';
       return;
     }
 
-    for (const auto& successor : best.successors()) {
+    for (const auto& successor : best->successors()) {
       ++stats.generated;
 
-      if (!visited.contains(successor)) {
-        visited.insert(successor);
+      if (!visited.contains(successor->grid())) {
+        visited.insert(successor->grid());
         priority_queue.push(std::move(successor));
       } else {
         ++stats.revisited;
