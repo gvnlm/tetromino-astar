@@ -52,15 +52,17 @@ void astar(
     return;
   }
 
-  auto priority_queue{make_priority_queue()};
   std::unordered_set<Grid, GridHash> visited{};
   Stats stats{};
 
-  if (!visualise) {
-    std::cout << "Searching for an optimal solution...\n";
-  }
-
+  auto priority_queue{make_priority_queue()};
   priority_queue.push(std::move(root));
+
+  std::cout << "Searching for an optimal solution...\n\n";
+
+  if (visualise) {
+    std::cout << priority_queue.top()->grid() << '\n';
+  }
 
   while (!priority_queue.empty()) {
     auto best{priority_queue.top()};
