@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <queue>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -40,6 +41,44 @@ auto make_priority_queue() {
 void clear_grid_display() {
   std::cout << "\033[" << Grid::MAX_Y + 1 << 'A'; // Move cursor up Grid::MAX_Y + 1 times
   std::cout << "\033[J";                          // Clear screen starting from cursor
+}
+
+void display_path_interactive(const std::shared_ptr<const Node>& node) {
+  static constexpr int NUM_OF_NEWLINES_AFTER_GRID{5};
+
+  std::vector<std::shared_ptr<const Node>> path{};
+  std::size_t path_index{0};
+  std::string input{};
+
+  for (auto curr{node}; curr; curr = curr->parent()) {
+    path.emplace_back(curr);
+  }
+
+  std::cout << path[path_index]->grid() << '\n';
+  std::cout << "Move: " << path.size() - path_index - 1 << '\n';
+  std::cout << "Press 'n' then Enter to see the next move.\n";
+  std::cout << "Press 'b' then Enter to see the previous move.\n";
+  std::cout << "Press Enter to exit.\n";
+
+  while (std::getline(std::cin, input) && !input.empty()) {
+    if (input == "b") {
+      path_index = (path_index == path.size() - 1) ? 0 : path_index + 1;
+    } else if (input == "n") {
+      path_index = (path_index == 0) ? path.size() - 1 : path_index - 1;
+    } else {
+      return;
+    }
+
+    std::cout << "\033[" << Grid::MAX_Y + 1 + NUM_OF_NEWLINES_AFTER_GRID
+              << 'A';      // Move cursor up Grid::MAX_Y + 1 + NUM_OF_NEWLINES_AFTER_GRID times
+    std::cout << "\033[J"; // Clear screen starting from cursor
+
+    std::cout << path[path_index]->grid() << '\n';
+    std::cout << "Move: " << path.size() - path_index - 1 << '\n';
+    std::cout << "Press 'n' then Enter to see the next move.\n";
+    std::cout << "Press 'b' then Enter to see the previous move.\n";
+    std::cout << "Press Enter to exit.\n";
+  }
 }
 }
 
@@ -87,7 +126,7 @@ void astar(
 
       std::cout << "Found an optimal solution!\n\n";
       std::cout << stats << '\n';
-      std::cout << best->grid() << '\n';
+      display_path_interactive(best);
 
       return;
     }
