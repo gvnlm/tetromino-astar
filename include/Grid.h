@@ -11,7 +11,7 @@
 
 class Grid {
 public:
-  static constexpr int MAX_X{16};
+  static constexpr int MAX_X{24};
   static constexpr int MAX_Y{16};
 
   static void set_start(Position pos);
