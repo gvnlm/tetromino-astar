@@ -1,5 +1,5 @@
 #include "../include/Grid.h"
-#include "../include/BitGrid16x16.h"
+#include "../include/BitGrid.h"
 #include "../include/Position.h"
 #include <algorithm>
 #include <cassert>
@@ -28,7 +28,7 @@ void Grid::set_target(Position pos) {
   s_target = pos;
 }
 
-void Grid::set_obstacles(const BitGrid16x16& obstacles) {
+void Grid::set_obstacles(const BitGrid<MAX_X, MAX_Y>& obstacles) {
   s_obstacles = obstacles;
 }
 
@@ -151,10 +151,10 @@ std::ostream& operator<<(std::ostream& out, const Grid& grid) {
 
 std::vector<Grid> Grid::successors() const {
   std::vector<Grid> successors{};
-  std::unordered_set<BitGrid16x16, BitGrid16x16Hash> visited{};
+  std::unordered_set<BitGrid<MAX_X, MAX_Y>, BitGridHash<MAX_X, MAX_Y>> visited{};
 
-  for (int y{0}; y < BitGrid16x16::MAX_Y; ++y) {
-    for (int x{0}; x < BitGrid16x16::MAX_X; ++x) {
+  for (int y{0}; y < BitGrid<MAX_X, MAX_Y>::MAX_Y; ++y) {
+    for (int x{0}; x < BitGrid<MAX_X, MAX_Y>::MAX_X; ++x) {
       if (m_placeables.is_set({x, y})) {
         successors.insert_range(successors.end(), successors_from({x, y}, visited));
       }
@@ -194,7 +194,7 @@ void Grid::place(Position pos) {
 }
 
 std::vector<Grid> Grid::successors_from(
-    Position pos, std::unordered_set<BitGrid16x16, BitGrid16x16Hash>& visited
+    Position pos, std::unordered_set<BitGrid<MAX_X, MAX_Y>, BitGridHash<MAX_X, MAX_Y>>& visited
 ) const {
   struct Node {
     Grid grid{};
