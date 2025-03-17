@@ -3,6 +3,7 @@
 
 #include "Grid.h"
 #include <memory>
+#include <ostream>
 #include <vector>
 
 class Node : public std::enable_shared_from_this<Node> {
@@ -24,5 +25,7 @@ private:
   Grid m_grid{};
   std::shared_ptr<const Node> m_parent{nullptr};
 };
+
+std::ostream& operator<<(std::ostream& out, const Node& node);
 
 #endif

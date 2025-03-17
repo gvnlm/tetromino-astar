@@ -56,7 +56,7 @@ void display_path_interactive(const std::shared_ptr<const Node>& node) {
     path.emplace_back(curr);
   }
 
-  std::cout << path[path_index]->grid() << '\n';
+  std::cout << *path[path_index] << '\n';
   std::cout << "Move: " << path.size() - path_index - 1 << '\n';
   std::cout << "Press 'n' then Enter to see the next move.\n";
   std::cout << "Press 'b' then Enter to see the previous move.\n";
@@ -75,7 +75,7 @@ void display_path_interactive(const std::shared_ptr<const Node>& node) {
               << 'A';      // Move cursor up Grid::MAX_Y + 1 + NUM_OF_NEWLINES_AFTER_GRID times
     std::cout << "\033[J"; // Clear screen starting from cursor
 
-    std::cout << path[path_index]->grid() << '\n';
+    std::cout << *path[path_index] << '\n';
     std::cout << "Move: " << path.size() - path_index - 1 << '\n';
     std::cout << "Press 'n' then Enter to see the next move.\n";
     std::cout << "Press 'b' then Enter to see the previous move.\n";
@@ -159,7 +159,7 @@ void astar(
   std::cout << "Searching for an optimal solution...\n\n";
 
   if (visualise) {
-    std::cout << priority_queue.top()->grid() << '\n';
+    std::cout << *priority_queue.top() << '\n';
   }
 
   while (!priority_queue.empty()) {
@@ -168,7 +168,7 @@ void astar(
 
     if (visualise) {
       clear_grid_display();
-      std::cout << best->grid() << '\n';
+      std::cout << *best << '\n';
     }
 
     if (best->grid().is_target_reached()) {

@@ -12,8 +12,6 @@
 #include <utility>
 #include <vector>
 
-static constexpr int TETROMINO_SIZE{4};
-
 static bool is_valid_pos(Position pos);
 
 void Grid::set_start(Position pos) {
@@ -166,6 +164,24 @@ std::vector<Grid> Grid::successors() const {
 
 bool Grid::is_target_reached() const {
   return m_h == 0;
+}
+
+std::array<Position, Grid::TETROMINO_SIZE> Grid::difference(const Grid& other) const {
+  std::array<Position, TETROMINO_SIZE> difference{};
+  auto difference_it{difference.begin()};
+
+  for (int x{0}; x < MAX_X; ++x) {
+    for (int y{0}; y < MAX_Y; ++y) {
+      if (m_placements.is_set({x, y}) != other.m_placements.is_set({x, y})) {
+        assert(difference_it != difference.end());
+
+        *difference_it = {x, y};
+        ++difference_it;
+      }
+    }
+  }
+
+  return difference;
 }
 
 std::size_t Grid::hash() const {

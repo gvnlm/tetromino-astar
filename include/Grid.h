@@ -13,12 +13,17 @@ class Grid {
 public:
   static constexpr int MAX_X{24};
   static constexpr int MAX_Y{16};
+  static constexpr int TETROMINO_SIZE{4};
 
   static void set_start(Position pos);
   static void set_target(Position pos);
   static void set_obstacles(const BitGrid<MAX_X, MAX_Y>& obstacles);
   static void preprocess_heuristic_values();
   static bool is_target_enclosed();
+
+  static Position start() { return s_start; }
+  static Position target() { return s_target; }
+  static const BitGrid<MAX_X, MAX_Y>& obstacles() { return s_obstacles; }
 
   Grid();
   Grid(const Grid& other);
@@ -30,7 +35,10 @@ public:
 
   std::vector<Grid> successors() const;
   bool is_target_reached() const;
+  std::array<Position, TETROMINO_SIZE> difference(const Grid& other) const;
   std::size_t hash() const;
+
+  const BitGrid<MAX_X, MAX_Y>& placements() const { return m_placements; }
 
 private:
   static inline Position s_start{0, 0};
@@ -50,9 +58,7 @@ private:
 };
 
 struct GridHash {
-  std::size_t operator()(const Grid& grid) const {
-    return grid.hash();
-  }
+  std::size_t operator()(const Grid& grid) const { return grid.hash(); }
 };
 
 #endif
