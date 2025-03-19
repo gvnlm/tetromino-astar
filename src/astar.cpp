@@ -12,6 +12,7 @@
 #include <vector>
 
 namespace {
+// Node stats for A* search
 struct Stats {
   int expanded{0};
   int generated{0};
@@ -27,7 +28,7 @@ struct Stats {
   }
 };
 
-auto make_priority_queue() {
+auto make_priority_queue() { // For A* search
   auto node_ptr_cmp
       = [](const std::shared_ptr<const Node>& a, const std::shared_ptr<const Node>& b) {
           return *a < *b;
@@ -39,16 +40,21 @@ auto make_priority_queue() {
       decltype(node_ptr_cmp)>{node_ptr_cmp};
 }
 
-// Assumes the most recent output is a Grid followed by a newline
 void clear_grid_display() {
-  std::cout << "\033[" << Grid::MAX_Y + 1 << 'A'; // Move cursor up Grid::MAX_Y + 1 times
-  std::cout << "\033[J";                          // Clear screen starting from cursor
+  // Move cursor up Grid::MAX_Y + 1 times (assumes the most recent output is a grid followed by a
+  // newline)
+  std::cout << "\033[" << Grid::MAX_Y + 1 << 'A';
+  // Clear screen beginning from cursor
+  std::cout << "\033[J";
 }
 
 void display_path_interactive(const std::shared_ptr<const Node>& node) {
+  // Number of newlines after the previously printed grid
   static constexpr int NUM_OF_NEWLINES_AFTER_GRID{5};
 
+  // Represents path to `node`, where `path[i + 1]` is `path[i]`'s parent
   std::vector<std::shared_ptr<const Node>> path{};
+
   std::size_t path_index{0};
   std::string input{};
 
@@ -71,9 +77,10 @@ void display_path_interactive(const std::shared_ptr<const Node>& node) {
       return;
     }
 
-    std::cout << "\033[" << Grid::MAX_Y + 1 + NUM_OF_NEWLINES_AFTER_GRID
-              << 'A';      // Move cursor up Grid::MAX_Y + 1 + NUM_OF_NEWLINES_AFTER_GRID times
-    std::cout << "\033[J"; // Clear screen starting from cursor
+    // Move cursor up Grid::MAX_Y + 1 + NUM_OF_NEWLINES_AFTER_GRID times
+    std::cout << "\033[" << Grid::MAX_Y + 1 + NUM_OF_NEWLINES_AFTER_GRID << 'A';
+    // Clear screen starting from cursor
+    std::cout << "\033[J";
 
     std::cout << *path[path_index] << '\n';
     std::cout << "Move: " << path.size() - path_index - 1 << '\n';

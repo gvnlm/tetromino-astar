@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <ostream>
 #include <queue>
 #include <stack>
 #include <unordered_map>
@@ -12,17 +11,19 @@
 #include <utility>
 #include <vector>
 
-static bool is_valid_pos(Position pos);
+namespace {
+bool is_valid_pos(Position pos) {
+  return pos.x >= 0 && pos.x < Grid::MAX_X && pos.y >= 0 && pos.y < Grid::MAX_Y;
+}
+}
 
 void Grid::set_start(Position pos) {
   assert(is_valid_pos(pos));
-  assert(!s_obstacles.is_set(pos));
   s_start = pos;
 }
 
 void Grid::set_target(Position pos) {
   assert(is_valid_pos(pos));
-  assert(!s_obstacles.is_set(pos));
   s_target = pos;
 }
 
@@ -31,17 +32,22 @@ void Grid::set_obstacles(const BitGrid<MAX_X, MAX_Y>& obstacles) {
 }
 
 void Grid::preprocess_heuristic_values() {
+  /**
+   * Use Dijkstra's algorithm to calculate the optimal cost from the target position to every
+   * non-obstacle position.
+   */
+
   struct Node {
     Position pos;
     int cost;
 
-    bool operator<(const Node& other) const {
+    bool operator<(Node other) const {
       return cost > other.cost;
     }
   };
 
   std::priority_queue<Node> unvisited{};
-  std::unordered_set<Position, PositionHash> visited{};
+  std::unordered_set<Position, PositionHash> visited_positions{};
 
   unvisited.emplace(s_target, 0);
   s_heuristic_values[s_target] = 0;
@@ -50,7 +56,8 @@ void Grid::preprocess_heuristic_values() {
     auto curr{unvisited.top()};
     unvisited.pop();
 
-    visited.insert(curr.pos);
+    // Finalise optimal cost from target position to `curr.pos`
+    visited_positions.insert(curr.pos);
 
     Position adj_positions[]{
         {curr.pos.x, curr.pos.y - 1},
@@ -59,8 +66,11 @@ void Grid::preprocess_heuristic_values() {
         {curr.pos.x + 1, curr.pos.y}
     };
 
-    for (const auto& adj_pos : adj_positions) {
-      if (visited.contains(adj_pos) || !is_valid_pos(adj_pos) || s_obstacles.is_set(adj_pos)) {
+    // Update neighbours' costs
+    for (auto adj_pos : adj_positions) {
+      // Ignore visited, invalid, or obstacle positions
+      if (visited_positions.contains(adj_pos) || !is_valid_pos(adj_pos)
+          || s_obstacles.is_set(adj_pos)) {
         continue;
       }
 
@@ -73,39 +83,58 @@ void Grid::preprocess_heuristic_values() {
     }
   }
 
+  // Measure cost in terms of tetromino moves instead of single cell moves
   for (auto& [_, heuristic_value] : s_heuristic_values) {
     heuristic_value = (heuristic_value + (TETROMINO_SIZE - 1)) / TETROMINO_SIZE;
   }
 }
 
 bool Grid::is_target_enclosed() {
+  /**
+   * Assuming `preprocess_heuristic_values()` has been called (which implements Dijkstra's
+   * algorithm), `s_heuristic_values.contains(s_start)` is `true` if and only if a path from the
+   * target position to the start position exists.
+   *
+   * Dependent on `s_heuristic_values` containing only positions reachable from the target position.
+   */
+
   assert(
       !s_heuristic_values.empty()
-      && "Grid::preprocess_heuristic_values() must be called before calling "
+      && "Ensure Grid::preprocess_heuristic_values() has been called before calling "
          "Grid::is_target_enclosed()"
   );
 
   return !s_heuristic_values.contains(s_start);
 }
 
+Position Grid::start() {
+  return s_start;
+}
+
+Position Grid::target() {
+  return s_target;
+}
+
+const BitGrid<Grid::MAX_X, Grid::MAX_Y>& Grid::obstacles() {
+  return s_obstacles;
+}
+
 Grid::Grid() {
   assert(
       !s_heuristic_values.empty()
-      && "Grid::preprocess_heuristic_values() must be called before initialising instances of Grid"
+      && "Ensure `Grid::preprocess_heuristic_values()` has been called before initialising "
+         "instances of Grid"
   );
 
-  if (s_heuristic_values.contains(s_start)) {
+  // Do not call `s_heuristic_values[s_start]` if target is enclosed, otherwise
+  // future calls to `is_target_enclosed()` will break (since it is dependent on
+  // `s_heuristic_values` containing only positions reachable from the target position)
+  if (!is_target_enclosed()) {
     m_h = s_heuristic_values[s_start];
     m_placeables.set(s_start);
     place(s_start);
   }
 }
-
-Grid::Grid(const Grid& other)
-    : m_placements{other.m_placements}
-    , m_placeables{other.m_placeables}
-    , m_g{other.m_g}
-    , m_h{other.m_h} {};
 
 Grid& Grid::operator=(Grid other) {
   std::swap(m_placements, other.m_placements);
@@ -120,40 +149,24 @@ bool Grid::operator==(const Grid& other) const {
 }
 
 bool Grid::operator<(const Grid& other) const {
-  return m_g + m_h > other.m_g + other.m_h;
+  // Grids with lower cost are considered greater
+  return (m_g + m_h) > (other.m_g + other.m_h);
 }
 
-std::ostream& operator<<(std::ostream& out, const Grid& grid) {
-  for (int y{0}; y < Grid::MAX_Y; ++y) {
-    for (int x{0}; x < Grid::MAX_X; ++x) {
-      Position pos{x, y};
-
-      if (pos == Grid::s_start || grid.m_placements.is_set(pos)) {
-        out << "\u25A1";
-      } else if (pos == Grid::s_target) {
-        out << "\u2605";
-      } else if (Grid::s_obstacles.is_set(pos)) {
-        out << "\u25A0";
-      } else {
-        out << "\u00B7";
-      }
-
-      out << ' ';
-    }
-
-    out << '\n';
-  }
-
-  return out;
+std::size_t Grid::hash() const {
+  return m_placements.hash();
 }
 
 std::vector<Grid> Grid::successors() const {
   std::vector<Grid> successors{};
   std::unordered_set<BitGrid<MAX_X, MAX_Y>, BitGridHash<MAX_X, MAX_Y>> visited{};
 
+  // For each position (x, y) adjacent to at least 1 position where a piece has been placed...
   for (int y{0}; y < BitGrid<MAX_X, MAX_Y>::MAX_Y; ++y) {
     for (int x{0}; x < BitGrid<MAX_X, MAX_Y>::MAX_X; ++x) {
       if (m_placeables.is_set({x, y})) {
+        // ...add all successor grids that result from placing a tetromino on the calling grid that
+        // overlaps (x, y)
         successors.insert_range(successors.end(), successors_from({x, y}, visited));
       }
     }
@@ -184,8 +197,8 @@ std::array<Position, Grid::TETROMINO_SIZE> Grid::difference(const Grid& other) c
   return difference;
 }
 
-std::size_t Grid::hash() const {
-  return m_placements.hash();
+const BitGrid<Grid::MAX_X, Grid::MAX_Y>& Grid::placements() const {
+  return m_placements;
 }
 
 void Grid::place(Position pos) {
@@ -202,7 +215,7 @@ void Grid::place(Position pos) {
       {pos.x, pos.y - 1}, {pos.x, pos.y + 1}, {pos.x - 1, pos.y}, {pos.x + 1, pos.y}
   };
 
-  for (const auto& adj_pos : adj_positions) {
+  for (auto adj_pos : adj_positions) {
     if (is_valid_pos(adj_pos) && !m_placements.is_set(adj_pos) && !s_obstacles.is_set(adj_pos)) {
       m_placeables.set(adj_pos);
     }
@@ -212,6 +225,13 @@ void Grid::place(Position pos) {
 std::vector<Grid> Grid::successors_from(
     Position pos, std::unordered_set<BitGrid<MAX_X, MAX_Y>, BitGridHash<MAX_X, MAX_Y>>& visited
 ) const {
+  /* Implemented using iterative depth-limited search, where depth is limited to 4. The actions a
+   * node can take involve placing a piece adjacent to an already placed piece (in this search, not
+   * the entire grid). Since initially there are no previously placed pieces, position `pos` is used
+   * as the initial action, thus ensuring `pos` is overlapped. Nodes at depth 4 (i.e., have taken 4
+   * actions) contain the successor grids.
+   */
+
   struct Node {
     Grid grid{};
     std::unordered_set<Position, PositionHash> actions{};
@@ -220,7 +240,7 @@ std::vector<Grid> Grid::successors_from(
 
   std::vector<Grid> successors{};
 
-  std::stack<Node> stack{};
+  std::stack<Node> stack{}; // For depth-limited search
   stack.emplace(*this, std::unordered_set<Position, PositionHash>{pos}, 0);
 
   while (!stack.empty()) {
@@ -233,7 +253,8 @@ std::vector<Grid> Grid::successors_from(
       continue;
     }
 
-    for (const auto& action : parent.actions) {
+    // Generate children then explore them
+    for (auto action : parent.actions) {
       Node child{parent};
       child.grid.place(action);
 
@@ -253,7 +274,7 @@ std::vector<Grid> Grid::successors_from(
           {action.x + 1, action.y}
       };
 
-      for (const auto& candidate_action : candidate_actions) {
+      for (auto candidate_action : candidate_actions) {
         if (is_valid_pos(candidate_action) && !child.grid.m_placements.is_set(candidate_action)
             && !s_obstacles.is_set(candidate_action)) {
           child.actions.insert(candidate_action);
@@ -265,8 +286,4 @@ std::vector<Grid> Grid::successors_from(
   }
 
   return successors;
-}
-
-static bool is_valid_pos(Position pos) {
-  return pos.x >= 0 && pos.x < Grid::MAX_X && pos.y >= 0 && pos.y < Grid::MAX_Y;
 }
