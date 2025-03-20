@@ -2,6 +2,7 @@
 #define POSITION_H
 
 #include <cstddef>
+#include <cstdint>
 
 struct Position {
   int x{0};
@@ -12,11 +13,8 @@ struct Position {
   }
 
   std::size_t hash() const {
-    // Implement boost::hash_combine
-    std::size_t seed{static_cast<std::size_t>(x)};
-    seed ^= static_cast<std::size_t>(y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-
-    return seed;
+    // Bitwise append `y` to 'x'
+    return (static_cast<int64_t>(x) << 32) | (static_cast<uint32_t>(y));
   }
 };
 
