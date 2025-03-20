@@ -2,8 +2,10 @@
 #include "../include/Grid.h"
 #include "../include/Node.h"
 #include "../include/Position.h"
+#include <chrono>
 #include <cstddef>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <queue>
@@ -145,6 +147,8 @@ bool read_astar_params(const std::string& filename, AstarParams& params) {
 void astar(
     Position start, Position target, const std::vector<Position>& obstacles, bool visualise
 ) {
+  auto start_time = std::chrono::steady_clock::now();
+
   Grid::set_start(start);
   Grid::set_target(target);
   Grid::set_obstacles(obstacles);
@@ -179,6 +183,12 @@ void astar(
     }
 
     if (best->grid().is_target_reached()) {
+      auto finish_time{std::chrono::steady_clock::now()};
+      auto elapsed_secs{
+          std::chrono::duration_cast<std::chrono::duration<double>>(finish_time - start_time)
+              .count()
+      };
+
       if (visualise) {
         clear_grid_display();
       }
@@ -187,7 +197,8 @@ void astar(
       std::cout << "\033[" << 2 << 'A';
       std::cout << "\033[J";
 
-      std::cout << "Found an optimal solution!\n\n";
+      std::cout << "Found an optimal solution in " << std::fixed << std::setprecision(2)
+                << elapsed_secs << " seconds!\n\n";
       std::cout << stats << '\n';
       display_path_interactive(best);
 
