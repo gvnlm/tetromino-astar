@@ -23,7 +23,6 @@ public:
   BitGrid8x8& operator=(BitGrid8x8 other);
 
   bool operator==(BitGrid8x8 other) const;
-  std::size_t hash() const;
 
   /**
    * Sets the bit at position `pos` to 1.

@@ -3,10 +3,33 @@
 
 #include "BitGrid8x8.h"
 #include "Position.h"
+#include <array>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <limits>
+#include <random>
 #include <vector>
+
+namespace {
+template <int Width, int Height>
+std::array<std::array<std::size_t, Height>, Width> make_zobrist_table() {
+  std::mt19937_64 rng{};
+  std::uniform_int_distribution<std::size_t> distribution{
+      std::numeric_limits<std::size_t>::min(), std::numeric_limits<std::size_t>::max()
+  };
+
+  std::array<std::array<std::size_t, Height>, Width> zobrist_table{};
+
+  for (int x{0}; x < Width; ++x) {
+    for (int y{0}; y < Height; ++y) {
+      zobrist_table[x][y] = distribution(rng);
+    }
+  }
+
+  return zobrist_table;
+};
+}
 
 /**
  * Represents an arbitrarily sized bit grid.
@@ -55,9 +78,13 @@ private:
   static constexpr int MAX_SUBGRID_X{(Width + (BitGrid8x8::MAX_X - 1)) / BitGrid8x8::MAX_X};
   // Number of 8x8 subgrids along y-axis
   static constexpr int MAX_SUBGRID_Y{(Height + (BitGrid8x8::MAX_Y - 1)) / BitGrid8x8::MAX_Y};
+  static inline std::array<std::array<std::size_t, Height>, Width> zobrist_table{
+      make_zobrist_table<Width, Height>()
+  };
 
   // Implement bit grid as a collection of 8x8 subgrids
   BitGrid8x8 m_subgrids[MAX_SUBGRID_X][MAX_SUBGRID_Y]{};
+  std::size_t zobrist_hash{0};
 
   bool is_valid_pos(Position pos) const;
 
@@ -125,29 +152,21 @@ bool BitGrid<Width, Height>::operator==(const BitGrid& other) const {
 
 template <int Width, int Height>
 std::size_t BitGrid<Width, Height>::hash() const {
-  // Implement boost::hash_combine
-  std::size_t seed{m_subgrids[0][0].hash()};
-  for (int i{0}; i < MAX_SUBGRID_X; ++i) {
-    for (int j{0}; j < MAX_SUBGRID_Y; ++j) {
-      if (i != 0 && j != 0) {
-        seed ^= m_subgrids[i][j].hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-      }
-    }
-  }
-
-  return seed;
+  return zobrist_hash;
 }
 
 template <int Width, int Height>
 void BitGrid<Width, Height>::set(Position pos) {
   assert(is_valid_pos(pos));
   subgrid_at(pos).set(relative_subgrid_pos(pos));
+  zobrist_hash ^= zobrist_table[pos.x][pos.y];
 }
 
 template <int Width, int Height>
 void BitGrid<Width, Height>::clear(Position pos) {
   assert(is_valid_pos(pos));
   subgrid_at(pos).clear(relative_subgrid_pos(pos));
+  zobrist_hash ^= zobrist_table[pos.x][pos.y];
 }
 
 template <int Width, int Height>

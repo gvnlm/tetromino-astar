@@ -32,10 +32,6 @@ bool BitGrid8x8::operator==(BitGrid8x8 other) const {
   return m_grid_mask == other.m_grid_mask;
 }
 
-std::size_t BitGrid8x8::hash() const {
-  return m_grid_mask;
-}
-
 void BitGrid8x8::set(Position pos) {
   assert(is_valid_pos(pos));
   m_grid_mask |= static_cast<uint64_t>(1) << bit_index(pos);
