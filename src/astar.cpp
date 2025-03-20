@@ -183,6 +183,10 @@ void astar(
         clear_grid_display();
       }
 
+      // Clear "Searching for an optimal solution...\n\n" from console
+      std::cout << "\033[" << 2 << 'A';
+      std::cout << "\033[J";
+
       std::cout << "Found an optimal solution!\n\n";
       std::cout << stats << '\n';
       display_path_interactive(best);
