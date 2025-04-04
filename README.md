@@ -4,8 +4,20 @@
 </div>
 
 # Approach
-## Representing states 
+## Representing states
+The `Grid` class is responsible for representing states in the A* search. Each `Grid` encapsulates a specific state configuration, storing:
+- `m_placements`: A bit grid that represents visited positions
+- `m_g`: The actual cost thus far
+- `m_h`: The estimated cost to the target position
+
+Additionally, each `Grid` stores `m_placeables`—a bit grid that represents positions adjacent to any visited position—used as part of generating successor states.
+
 ## Generating successor states
+
+
+
+
+
 ## Heuristic
 
 # Usage
