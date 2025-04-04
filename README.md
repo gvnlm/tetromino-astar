@@ -19,7 +19,7 @@ Generating the successor states of a given state involves identifying all possib
 For each position `p` adjacent to any visited position (as tracked by `m_placeables`), starting from `p`, perform depth-limited search with revisited-state checking to identify all valid placements of 4 connected tiles (i.e., a tetromino). By starting the search from `p`, we ensure that the tetromino placements indentified are adjacent to a visited position.
 
 ## Heuristic
-Before the search begins, Dijkstra's algorithm is used to calculate the optimal cost in terms of single cell moves from the target position to every position excluding obstacles. The cost for each position is then divided by 4 and rounded up, providing an accurate estimate of its cost to the target position, in terms of tetromino moves. These values are stored in a lookup table.
+Before the search begins, Dijkstra's algorithm is used to calculate the optimal cost in terms of single cell moves from the target position to every position excluding obstacles. The cost for each position is then divided by 4 and rounded up, providing an accurate estimate of its cost to the target position, in terms of tetromino moves. These values are stored in a lookup table and serve as the heuristic for the search.
 
 
 # Usage
