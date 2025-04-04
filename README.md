@@ -13,10 +13,10 @@ The `Grid` class is responsible for representing states in the A* search. Each `
 Additionally, each `Grid` stores `m_placeables`—a bit grid that represents positions adjacent to any visited position—used as part of generating successor states.
 
 ## Generating successor states
+Generating the successor states of a given state involves identifying all possible valid placements of a tetromino. A tetromino placement is valid so long as it does not overlap obstacles or already visited positons, and is adjacent to any visited position.
 
-
-
-
+#### Algorithm
+For each position `p` adjacent to any visited position (as tracked by `m_placeables`), starting from `p`, perform depth-limited search with revisited-state checking to identify all valid placements of 4 connected tiles (i.e., a tetromino). By starting the search from `p`, we ensure that the tetromino placements indentified are adjacent to a visited position.
 
 ## Heuristic
 
