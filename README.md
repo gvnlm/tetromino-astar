@@ -3,7 +3,9 @@
   <img src="docs/demo.gif" width="60%"/>
 </div>
 
-# Approach
+This program finds an optimal sequence of tetromino placements from a start position to a target position, avoiding obstacles. The search and its outcome are visualised in real time through a terminal-based interface.
+
+# A* search
 ## Representing states
 The `Grid` class is responsible for representing states in the A* search. Each `Grid` encapsulates a specific state configuration, storing:
 - `m_placements`: A bit grid that represents visited positions
