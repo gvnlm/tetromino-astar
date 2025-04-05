@@ -65,3 +65,4 @@ t...o.o.o.o.o.o.........
 ```
 
 # What's next?
+- Replace terminal-based interface and input file with a GUI (e.g., Qt)
