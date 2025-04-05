@@ -3,9 +3,9 @@
   <img src="docs/demo.gif" width="60%"/>
 </div>
 
-This program finds an optimal sequence of tetromino placements from a start position to a target position, avoiding obstacles. The search and its outcome are visualised in real time through a terminal-based interface.
+This program uses A* search to find an optimal sequence of tetromino placements from a start position to a target position, avoiding obstacles. The search and its outcome are visualised in real time through a terminal-based interface.
 
-# A* search
+# Implementing A* search
 ## Representing states
 The `Grid` class is responsible for representing states in the A* search. Each `Grid` encapsulates a specific state configuration, storing:
 - `m_placements`: A bit grid that represents visited positions
@@ -15,13 +15,13 @@ The `Grid` class is responsible for representing states in the A* search. Each `
 Additionally, each `Grid` stores `m_placeables`—a bit grid that represents positions adjacent to any visited position—used as part of generating successor states.
 
 ## Generating successor states
-Generating the successor states of a given state involves identifying all possible valid placements of a tetromino. A tetromino placement is valid so long as it does not overlap obstacles or already visited positons, and is adjacent to any visited position.
+Generating the successor states of a given state involves identifying all possible valid placements of a tetromino. A tetromino placement is valid so long as it does not overlap obstacles or already visited positions, and is adjacent to any visited position.
 
 #### Algorithm
-For each position `p` adjacent to any visited position (as tracked by `m_placeables`), starting from `p`, perform depth-limited search with revisited-state checking to identify all valid placements of 4 connected tiles (i.e., a tetromino). By starting the search from `p`, we ensure that the tetromino placements indentified are adjacent to a visited position.
+For each position `p` adjacent to any visited position (as tracked by `m_placeables`), starting from `p`, perform depth-limited search with revisited-state checking to identify all valid placements of 4 connected tiles (i.e., a tetromino). By starting the search from `p`, we ensure that the tetromino placements identified are adjacent to a visited position.
 
 ## Heuristic
-Before the search begins, Dijkstra's algorithm is used to calculate the optimal cost in terms of single cell moves from the target position to every position excluding obstacles. The cost for each position is then divided by 4 and rounded up, providing an accurate estimate of its cost to the target position, in terms of tetromino moves. These values are stored in a lookup table and serve as the heuristic for the search.
+Before the search begins, Dijkstra's algorithm is used to calculate the optimal cost in terms of single-cell moves from the target position to every position excluding obstacles. The cost for each position is then divided by 4 and rounded up, providing an accurate estimate of its cost to the target position, in terms of tetromino moves. These values are stored in a lookup table and serve as the heuristic for the search.
 
 
 # Usage
@@ -64,4 +64,4 @@ oo......o.o...o.ooooooo.
 t...o.o.o.o.o.o.........
 ```
 
-# Future enhancements
+# What's next?
