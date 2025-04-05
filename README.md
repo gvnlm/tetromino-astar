@@ -4,6 +4,7 @@
 </div>
 
 This program uses A* search to find an optimal sequence of tetromino placements from a start position to a target position, avoiding obstacles. The search and its outcome are visualised in real time through a terminal-based interface.
+This README offers a high-level overview of the program, with further details documented in the codebase.
 
 # Implementing A* search
 ## Representing states
